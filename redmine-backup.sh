@@ -1,25 +1,38 @@
-# required settings
-DB_USERNAME='###'
-DB_PASSWORD='###'
-DB_NAME='###'
-REDMINE_ROOT='/opt/redmine/'
+#!/bin/bash
+# This script back up KWT redmine installation (database + files)
+
+# DB setting (Note : Don't commit credentials)
+DB_USERNAME='root'
+DB_PASSWORD='XXX'
+DB_NAME='redmine'
+
+# Directories 
+REDMINE_ROOT='/opt/redmine/redmine-3.4.3'
 BACKUP_ROOT='/home/seri/redmine-backup'
 
+# backup file name
 date=$(date +"%d-%b-%Y")
-
-GS_FILENAME='redmine-$date.tar.gz'
+FILENAME='redmine-'$date'.tar.gz'
 
 echo 'Setting up directories'
-mkdir $BACKUP_ROOT/redmine/db -p
-mkdir $BACKUP_ROOT/redmine/files -p
+mkdir $BACKUP_ROOT/db -p
+mkdir $BACKUP_ROOT/files -p
 
 echo 'Backing up database'
-/usr/bin/mysqldump -u $DB_USERNAME --password=$DB_PASSWORD $DB_NAME | gzip > $BA$
+mysqldump -u $DB_USERNAME --password=$DB_PASSWORD $DB_NAME > $BACKUP_ROOT/db/$date.sql
 
-echo 'Backing up attachments'
-rsync -a $REDMINE_ROOT/files/ $BACKUP_ROOT/redmine-3.4.3/files/
+echo 'Backing up file attachments'
+cp -rf $REDMINE_ROOT/files $BACKUP_ROOT
 
-echo 'Packing into single archive'
-tar -czPf $GS_FILENAME $BACKUP_ROOT/redmine-3.4.3/
+echo 'Packing evrything into single archive :' $FILENAME
+tar -cvzf $FILENAME $BACKUP_ROOT
 
-echo 'Backup complete'
+echo 'Backup complete. Cleaning up...'
+cd $BACKUP_ROOT
+rm -rf db
+rm -rf files
+
+# remove old backups older than 2 weeks
+find *.tar.gz -mtime +15 -exec rm {} \;
+
+echo 'DONE'
