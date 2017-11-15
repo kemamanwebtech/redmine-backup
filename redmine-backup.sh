@@ -27,6 +27,11 @@ cp -rf $REDMINE_ROOT/files $BACKUP_ROOT
 echo 'Packing evrything into single archive :' $FILENAME
 tar -cvzf $FILENAME $BACKUP_ROOT
 
+# upload backup files to dropbox storage
+echo 'uploading backup files to dropbox storage'
+upload-redmine-backup.sh $FILENAME
+
+
 echo 'Backup complete. Cleaning up...'
 cd $BACKUP_ROOT
 rm -rf db
